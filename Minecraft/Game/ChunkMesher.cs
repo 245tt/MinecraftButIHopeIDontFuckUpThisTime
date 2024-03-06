@@ -1,13 +1,43 @@
-﻿using OpenTK.Mathematics;
+﻿using Minecraft.Graphics;
+using OpenTK.Mathematics;
 
 namespace Minecraft.Game
 {
-    static class ChunkMesh
+    class ChunkMesher
     {
         static TextureAtlas atlas = Minecraft.GetInstance().textureAtlas;
-        public static List<float> GenerateMesh(Chunk chunk)
+        public bool isRunning { get; private set; }
+        private Task<List<float>> mesher;
+        private Chunk workingChunk;
+
+        public bool Finished() 
         {
-            chunk.isCurrentlyMeshing = true;
+            if(mesher != null)
+                if (mesher.IsCompleted && workingChunk != null) return true;
+            return false;
+        }
+        public void StartMeshing(Chunk chunk) 
+        {
+            workingChunk = chunk;
+            isRunning = true;
+            mesher = Task.Run(() => 
+            {
+                return GenerateMesh(chunk);
+            });
+            
+        }
+        public void UpdateMesh() 
+        {
+            workingChunk.isMeshed = true;
+            workingChunk.needsRemesh = false;
+            if(workingChunk.chunkVAO != null)
+                workingChunk.chunkVAO.Dispose();
+            workingChunk.chunkVAO = new chunkVAO(mesher.Result.ToArray());
+            workingChunk = null;
+            isRunning = false;
+        }
+        List<float> GenerateMesh(Chunk chunk)
+        {
             List<float> data = new List<float>(Chunk.CHUNKSIZEPOWER3 * 30 * 6);
 
             for (int i = 0; i < Chunk.CHUNKSIZEPOWER3; i++)
@@ -19,29 +49,25 @@ namespace Minecraft.Game
                 int x = index % Chunk.CHUNKSIZE;
                 if (BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)) != BlockList.BLOCK_AIR)
                 {
-                    Vector4i texdata = BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Top);
+                   
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y + 1, z)).IsOpaque())
-                        data.AddRange(AddTopFace(x, y, z, texdata));
+                        data.AddRange(AddTopFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Top)));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y - 1, z)).IsOpaque())
-                        data.AddRange(AddBottomFace(x, y, z, texdata));
+                        data.AddRange(AddBottomFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Bottom)));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z - 1)).IsOpaque())
-                        data.AddRange(AddNorthFace(x, y, z, texdata));
+                        data.AddRange(AddNorthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.North)));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z + 1)).IsOpaque())
-                        data.AddRange(AddSouthFace(x, y, z, texdata));
+                        data.AddRange(AddSouthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.South)));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x - 1, y, z)).IsOpaque())
-                        data.AddRange(AddWestFace(x, y, z, texdata));
+                        data.AddRange(AddWestFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.West)));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x + 1, y, z)).IsOpaque())
-                        data.AddRange(AddEastFace(x, y, z, texdata));
+                        data.AddRange(AddEastFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.East)));
                 }
             }
-            //if (chunk.chunkVAO != null)
-            //    chunk.chunkVAO.Dispose();
-            //chunk.chunkVAO = new chunkVAO(data.ToArray());
-            chunk.isCurrentlyMeshing = false;
             return data;
         }
 
-        private static short GetBlockFromPos(Chunk chunk, int x, int y, int z)
+        private short GetBlockFromPos(Chunk chunk, int x, int y, int z)
         {
 
             if (x >= 0 && x < Chunk.CHUNKSIZE && y >= 0 && y < Chunk.CHUNKSIZE && z >= 0 && z < Chunk.CHUNKSIZE)
@@ -97,7 +123,7 @@ namespace Minecraft.Game
             }
 
         }
-        private static float[] AddTopFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddTopFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {
@@ -111,7 +137,7 @@ namespace Minecraft.Game
             };
             return data;
         }
-        private static float[] AddBottomFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddBottomFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {
@@ -126,7 +152,7 @@ namespace Minecraft.Game
             return data;
         }
 
-        private static float[] AddNorthFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddNorthFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {
@@ -140,7 +166,7 @@ namespace Minecraft.Game
             };
             return data;
         }
-        private static float[] AddSouthFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddSouthFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {
@@ -154,7 +180,7 @@ namespace Minecraft.Game
             return data;
         }
 
-        private static float[] AddWestFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddWestFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {
@@ -168,7 +194,7 @@ namespace Minecraft.Game
             };
             return data;
         }
-        private static float[] AddEastFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddEastFace(int x, int y, int z, Vector4i textureData)
         {
             float[] data = new float[]
             {

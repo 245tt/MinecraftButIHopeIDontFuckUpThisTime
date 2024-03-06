@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Fonts\" />
     <Folder Include="Assets\Textures\" />
     <Folder Include="Assets\Shaders\" />
   </ItemGroup>

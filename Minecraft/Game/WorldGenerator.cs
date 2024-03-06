@@ -15,31 +15,7 @@ namespace Minecraft.Game
         {
             Chunk chunk = new Chunk();
             chunk.pos = chunkPos;
-            Chunk neighbor;
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(1, 0, 0), out neighbor))
-            {
-                chunk.east = neighbor;
-            }
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(-1, 0, 0), out neighbor))
-            {
-                chunk.west = neighbor;
-            }
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(0, 1, 0), out neighbor))
-            {
-                chunk.top = neighbor;
-            }
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(0, -1, 0), out neighbor))
-            {
-                chunk.bottom = neighbor;
-            }
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(0, 0, -1), out neighbor))
-            {
-                chunk.north = neighbor;
-            }
-            if (world.chunks.TryGetValue(chunkPos + new Vector3i(0, 0, 1), out neighbor))
-            {
-                chunk.south = neighbor;
-            }
+            
 
             Random random = new Random(seed);
 
@@ -54,13 +30,17 @@ namespace Minecraft.Game
                     {
                         int Ycoord = y + chunkPos.Y * Chunk.CHUNKSIZE;
 
-                        if (Ycoord >= height)
+                        if (Ycoord > height)
                         {
                             chunk.SetBlockAt(x, y, z, 0);
                         }
                         else
                         {
                             chunk.SetBlockAt(x, y, z, 1);
+                        }
+                        if (Ycoord == height)
+                        {
+                            chunk.SetBlockAt(x, y, z, 4);
                         }
                     }
                 }

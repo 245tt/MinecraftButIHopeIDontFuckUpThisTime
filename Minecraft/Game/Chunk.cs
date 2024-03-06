@@ -22,10 +22,7 @@ namespace Minecraft.Game
         public Vector3i pos;
         public bool isMeshed = false;
         public bool needsRemesh = true;
-        public bool isCurrentlyMeshing = false;
         public chunkVAO chunkVAO;
-        public Task<List<float>> mesher;
-        public static byte numberOfActiveMeshers = 0;
         public Chunk()
         {
             for (int i = 0; i < CHUNKSIZEPOWER3; i++)
@@ -38,21 +35,44 @@ namespace Minecraft.Game
         {
             return blocks[x + CHUNKSIZE * (y + CHUNKSIZE * z)];
         }
-        public void SetBlockAt(int x, int y, int z,short blockID)
+        public void SetBlockAt(int x, int y, int z, short blockID)
         {
             blocks[x + CHUNKSIZE * (y + CHUNKSIZE * z)] = blockID;
         }
-        public void MeshAsync()
+        public void UpdateNeighbors(World world)
         {
-            mesher = Task.Run(() => 
+            Chunk neighbor;
+            if (world.chunks.TryGetValue(pos + new Vector3i(1, 0, 0), out neighbor))
             {
-                return ChunkMesh.GenerateMesh(this);
-            });
+                this.east = neighbor;
+                this.east.west = this;
+            }
+            if (world.chunks.TryGetValue(pos + new Vector3i(-1, 0, 0), out neighbor))
+            {
+                this.west = neighbor;
+                this.west.east = this;
+            }
+            if (world.chunks.TryGetValue(pos + new Vector3i(0, 1, 0), out neighbor))
+            {
+                this.top = neighbor;
+                this.top.bottom = this;
+            }
+            if (world.chunks.TryGetValue(pos + new Vector3i(0, -1, 0), out neighbor))
+            {
+                this.bottom = neighbor;
+                this.bottom.top = this;
+            }
+            if (world.chunks.TryGetValue(pos + new Vector3i(0, 0, -1), out neighbor))
+            {
+                this.north = neighbor;
+                this.north.south = this;
+            }
+            if (world.chunks.TryGetValue(pos + new Vector3i(0, 0, 1), out neighbor))
+            {
+                this.south = neighbor;
+                this.south.north = this;
+            }
 
-        }
-        public List<float> Mesh() 
-        {
-            return ChunkMesh.GenerateMesh(this);
         }
     }
 }

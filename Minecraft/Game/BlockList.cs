@@ -7,5 +7,6 @@
         public static readonly Block BLOCK_DIRT = BlockRegistry.GetBlockFromID(1);
         public static readonly Block BLOCK_STONE = BlockRegistry.GetBlockFromID(2);
         public static readonly Block BLOCK_OBSIDIAN = BlockRegistry.GetBlockFromID(3);
+        public static readonly Block BLOCK_GRASS = BlockRegistry.GetBlockFromID(4);
     }
 }

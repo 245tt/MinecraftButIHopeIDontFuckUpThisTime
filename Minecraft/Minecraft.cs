@@ -17,9 +17,12 @@ namespace Minecraft
         public Window window;
         public ChunkRenderer renderer;
         public DebugRenderer debugRenderer;
+        public HUDRender hudRender;
         public TextureAtlas textureAtlas;
         public Camera worldCamera;
         public World world;
+        public bool debugMode = false;
+        public List<ChunkMesher> chunkMeshers = new List<ChunkMesher>();
         Stopwatch stopwatch;
         public double deltaTime;
         public double currentTime;
@@ -34,26 +37,20 @@ namespace Minecraft
             window = new Window();
             renderer = new ChunkRenderer();
             debugRenderer = new DebugRenderer();
+            hudRender = new HUDRender();
             textureAtlas = new TextureAtlas();
             worldCamera = new Camera(90f);
-            Block.RegisterBlocks();
+            BlockRegistry.RegisterBlocks();
             stopwatch = new Stopwatch();
             worldCamera.Rotation.Y = -90;
             worldCamera.Position.Z = 2f;
-
             world = new World();
-            //Chunk chunk = new Chunk();
-            //Chunk chunk2 = new Chunk();
-            //Chunk chunk3 = new Chunk();
-            //chunk2.pos = new Vector3i(0,0,-1);
-            //chunk3.pos = new Vector3i(1,0,0);
-            //chunk.north = chunk2;
-            //chunk2.south = chunk;
-            //chunk.east = chunk3;
-            //chunk3.west = chunk;
-            //chunk.Mesh();
-            //chunk2.Mesh();
-            //chunk3.Mesh();
+
+            for (int i = 0; i < 5; i++)
+            {
+                chunkMeshers.Add(new ChunkMesher());
+            }
+
             int placeBlock = 2;
             GL.ClearColor(0, 0, 0.5f, 1.0f);
             stopwatch.Start();
@@ -62,6 +59,9 @@ namespace Minecraft
                 window.PollEvents();
                 float speed = 10f;
 
+                if (window.window.KeyboardState.IsKeyDown(Keys.LeftShift))
+                    speed = 50f;
+                //wireframe and face culling
                 if (window.window.KeyboardState.IsKeyPressed(Keys.Z))
                 {
                     renderer.wireframe = !renderer.wireframe;
@@ -71,6 +71,7 @@ namespace Minecraft
                     renderer.cullfaces = !renderer.cullfaces;
                 }
 
+                //camera movement
                 if (window.window.KeyboardState.IsKeyDown(Keys.W))
                 {
                     worldCamera.Position += worldCamera.lookDir * (float)deltaTime * speed;
@@ -90,13 +91,11 @@ namespace Minecraft
                 }
                 worldCamera.Rotation.X -= window.window.MouseState.Delta.Y;
                 worldCamera.Rotation.Y += window.window.MouseState.Delta.X;
-                Physics.RaycastHit hit;
-                Physics.BlockRaycast(worldCamera.Position, worldCamera.lookDir, 10f, out hit);
 
-                //drawing
-                renderer.Prepare(worldCamera);
-                textureAtlas.atlas.Use();
-                if (window.window.KeyboardState.IsKeyDown(Keys.D1)) 
+
+
+                //change placeable blocks
+                if (window.window.KeyboardState.IsKeyDown(Keys.D1))
                 {
                     placeBlock = 1;
                 }
@@ -108,7 +107,20 @@ namespace Minecraft
                 {
                     placeBlock = 3;
                 }
+                if (window.window.KeyboardState.IsKeyDown(Keys.D4))
+                {
+                    placeBlock = 4;
+                }
 
+                //debug mode
+                if (window.window.KeyboardState.IsKeyPressed(Keys.F3))
+                {
+                    debugMode = !debugMode;
+                }
+
+                //raycast
+                Physics.RaycastHit hit;
+                Physics.BlockRaycast(worldCamera.Position, worldCamera.lookDir, 10f, out hit);
                 if (hit.hit)
                 {
 
@@ -149,37 +161,91 @@ namespace Minecraft
                         }
                     }
                 }
+                //current chunk position
+                Vector3 chunkPos = Vector3.Divide(worldCamera.Position, 32);
+                chunkPos.X = MathF.Floor(chunkPos.X);
+                chunkPos.Y = MathF.Floor(chunkPos.Y);
+                chunkPos.Z = MathF.Floor(chunkPos.Z);
 
+                //unloading too far chunks
+                List<Vector3i> chunkToRemove = new List<Vector3i>();
+                for (int i = 0; i <world.chunks.Count; i++)
+                {
+                    Chunk chunk = world.chunks.ElementAt(i).Value;
+                
+                    float dist = Vector2.Subtract(chunk.pos.Xz,chunkPos.Xz).Length;
+                    if (dist > 10) 
+                    {
+                        chunkToRemove.Add(chunk.pos);
+                        Console.Out.WriteLine("Removed Chunk at:{0}, distance:{1}",chunk.pos,dist);
+                    }
+                }
+                foreach (Vector3i pos in chunkToRemove)
+                {
+                    world.chunks.Remove(pos);
+                }
+                chunkToRemove.Clear();
+
+                //loading non-loaded chunks
+                int maxLoadedChunksPerFrame = 10;
+                int currentLoadedChunksPerFrame = 0;
+                int renderRadius = 5;
+                for (int x = -renderRadius - 1; x < renderRadius + 1; x++)
+                {
+                    for (int z = -renderRadius - 1; z < renderRadius + 1; z++)
+                    {
+                        for (int y = 0; y < World.WORLD_HEIGHT; y++)
+                        {
+                            float distance = MathF.Sqrt((x * x) + (z * z));
+                            if (distance <= renderRadius)
+                            {
+                                Vector3i searchedChunk = new Vector3i(x + (int)chunkPos.X, y, z + (int)chunkPos.Z);
+                                if (world.chunks.TryGetValue(searchedChunk, out Chunk chunk))
+                                {
+
+                                }
+                                else
+                                {
+                                    if (currentLoadedChunksPerFrame < maxLoadedChunksPerFrame)
+                                    {
+                                        currentLoadedChunksPerFrame++;
+                                        world.LoadChunk(searchedChunk);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //await mesh
+                foreach (ChunkMesher mesher in chunkMeshers)
+                {
+                    if (mesher.Finished())
+                    {
+                        mesher.UpdateMesh();
+                    }
+                }
+                //drawing part and eternal suffering
+                renderer.Prepare(worldCamera);
+                textureAtlas.atlas.Use();
+
+                //chunk rendering and what not
                 foreach (Chunk chunk in world.chunks.Values)
                 {
+
                     //start meshing if needed
-                    if (chunk.needsRemesh && !chunk.isCurrentlyMeshing)
+                    if (chunk.needsRemesh)
                     {
-                        if (Chunk.numberOfActiveMeshers < 1)
+                        foreach (ChunkMesher mesher in chunkMeshers)
                         {
-                            Chunk.numberOfActiveMeshers++;
-                            chunk.isCurrentlyMeshing = true;
-                            chunk.MeshAsync();
+                            if (!mesher.isRunning)
+                            {
+                                mesher.StartMeshing(chunk);
+                                break;
+                            }
                         }
                     }
-                    //await mesh data
-                    if (chunk.mesher != null)
-                    {
-                        if (chunk.mesher.IsCompleted)
-                        {
-                            List<float> data = await chunk.mesher;
-                            if (chunk.chunkVAO != null)
-                                chunk.chunkVAO.Dispose();
-                            chunk.chunkVAO = new chunkVAO(data.ToArray());
-                            data.Clear();
-                            data = null;
-                            chunk.isMeshed = true;
-                            chunk.isCurrentlyMeshing = false;
-                            chunk.needsRemesh = false;
-                            Chunk.numberOfActiveMeshers--;
-                            chunk.mesher = null;
-                        }
-                    }
+
 
                     //draw meshed chunks
                     if (chunk.isMeshed)
@@ -192,11 +258,19 @@ namespace Minecraft
                 {
                     renderer.DrawBlockOutLine(hit.blockPos);
                 }
+                hudRender.Prepare();
+                if (!debugMode)
+                    hudRender.DrawCross();
                 debugRenderer.Prepare(worldCamera);
-                debugRenderer.DrawDirections();
+                if (debugMode)
+                {
+                    debugRenderer.DrawDirections();
+                    Chunk chunk;
+                    if (world.chunks.TryGetValue((Vector3i)chunkPos, out chunk))
+                        debugRenderer.DrawDebugChunk(chunk);
+                }
                 window.SwapBuffers();
                 deltaTime = (stopwatch.Elapsed.TotalNanoseconds - currentTime) / 1000000000d;
-                //window.window.Title = "FPS:" + ((int)(1d / deltaTime)).ToString();
                 currentTime = stopwatch.Elapsed.TotalNanoseconds;
 
             }
