@@ -9,7 +9,10 @@ namespace Minecraft.Game.Blocks
         {
             return 20;
         }
-
+        public override short GetID()
+        {
+            return 3;
+        }
         public override MaterialType Getmaterial()
         {
             return MaterialType.Stone;

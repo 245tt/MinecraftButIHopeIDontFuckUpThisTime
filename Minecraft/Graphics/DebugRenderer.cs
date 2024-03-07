@@ -1,6 +1,7 @@
 ﻿using Minecraft.Game;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Minecraft.Graphics
 {
@@ -24,7 +25,8 @@ namespace Minecraft.Graphics
 
         Shader directionsShader = new Shader("Assets/Shaders/debugdir.vert", "Assets/Shaders/debugdir.frag");
         Shader textShader = new Shader("Assets/Shaders/font.vert", "Assets/Shaders/font.frag");
-        FontVAO fontVAO = new FontVAO(null);
+        FontVAO chunkDataVAO = new FontVAO(null);
+        FontVAO coordsVAO = new FontVAO(null);
         directionsVAO directions = new directionsVAO(directionData);
         Font font = new Font("Assets/Fonts/Font.png", "Assets/Fonts/Font.fnt");
         public void Prepare(Camera cam)
@@ -50,6 +52,20 @@ namespace Minecraft.Graphics
         public void DrawChunkBorders(Vector3i pos) 
         {
 
+        }
+        public void DrawCoords(Vector3 pos) 
+        {
+            coordsVAO.BindData(font.GenerateText($"X:{pos.X}\nY:{pos.Y}\nZ:{pos.Z}", new Vector2(-1, .4f), 30));
+
+            textShader.Use();
+            font.textureAtlas.Use();
+            coordsVAO.Use();
+            GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.DepthTest);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, coordsVAO.GetSize());
+            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
         }
         public void DrawDebugChunk(Chunk chunk)
         {
@@ -78,15 +94,15 @@ namespace Minecraft.Graphics
                 $"South Chunk: {chunkSouth}\n" +
                 $"Top Chunk: {chunkTop}\n" +
                 $"Bottom Chunk: {chunkBottom}\n";
-            fontVAO.BindData(font.GenerateText(text, new Vector2(-1, .1f), 30));
+            chunkDataVAO.BindData(font.GenerateText(text, new Vector2(-1, .1f), 30));
 
             textShader.Use();
             font.textureAtlas.Use();
-            fontVAO.Use();
+            chunkDataVAO.Use();
             GL.Disable(EnableCap.CullFace);
             GL.Disable(EnableCap.DepthTest);
             GL.PolygonMode(MaterialFace.FrontAndBack,PolygonMode.Fill);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, fontVAO.GetSize());
+            GL.DrawArrays(PrimitiveType.Triangles, 0, chunkDataVAO.GetSize());
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
         }

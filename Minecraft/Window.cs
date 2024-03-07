@@ -19,10 +19,17 @@ namespace Minecraft
             window = new NativeWindow(settings);
             window.Closing += Window_Closing;
             window.Resize += Window_Resize;
+            window.CursorState = CursorState.Grabbed;
             aspectRatio = (float)window.Size.X / (float)window.Size.Y;
             //window.VSync = VSyncMode.On;
         }
-
+        public void FullScreen(bool fullscreen) 
+        {
+            if (fullscreen)
+                window.WindowState = WindowState.Fullscreen;
+            else 
+                window.WindowState = WindowState.Normal;
+        }
         private void Window_Resize(ResizeEventArgs obj)
         {
             GL.Viewport(0, 0, obj.Width, obj.Height);

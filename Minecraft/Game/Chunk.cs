@@ -46,31 +46,37 @@ namespace Minecraft.Game
             {
                 this.east = neighbor;
                 this.east.west = this;
+                this.east.needsRemesh = true;
             }
             if (world.chunks.TryGetValue(pos + new Vector3i(-1, 0, 0), out neighbor))
             {
                 this.west = neighbor;
                 this.west.east = this;
+                this.west.needsRemesh = true;
             }
             if (world.chunks.TryGetValue(pos + new Vector3i(0, 1, 0), out neighbor))
             {
                 this.top = neighbor;
                 this.top.bottom = this;
+                this.top.needsRemesh = true;
             }
             if (world.chunks.TryGetValue(pos + new Vector3i(0, -1, 0), out neighbor))
             {
                 this.bottom = neighbor;
                 this.bottom.top = this;
+                this.bottom.needsRemesh = true;
             }
             if (world.chunks.TryGetValue(pos + new Vector3i(0, 0, -1), out neighbor))
             {
                 this.north = neighbor;
                 this.north.south = this;
+                this.north.needsRemesh = true;
             }
             if (world.chunks.TryGetValue(pos + new Vector3i(0, 0, 1), out neighbor))
             {
                 this.south = neighbor;
                 this.south.north = this;
+                this.south.needsRemesh = true;
             }
 
         }

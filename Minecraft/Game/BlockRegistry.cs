@@ -15,26 +15,26 @@ namespace Minecraft.Game
             }
             return GetBlockFromID(-1);
         }
-        public static void Register(Block block, short id)
+        public static void Register(Block block)
         {
-            if (blocks.ContainsKey(id))
+            if (blocks.ContainsKey(block.GetID()))
             {
-                throw new Exception($"Block with id: {id} is arleady registered");
+                throw new Exception($"Block with id: {block.GetID()} is arleady registered");
             }
             else
             {
-                blocks.Add(id, block);
+                blocks.Add(block.GetID(), block);
             }
         }
         public static void RegisterBlocks()
         {
 
-            Register(new BlockUnknown(), -1);
-            Register(new BlockAir(), 0);
-            Register(new BlockDirt(), 1);
-            Register(new BlockStone(), 2);
-            Register(new BlockObsidian(), 3);
-            Register(new BlockGrass(), 4);
+            Register(new BlockUnknown());
+            Register(new BlockAir());
+            Register(new BlockDirt());
+            Register(new BlockStone());
+            Register(new BlockObsidian());
+            Register(new BlockGrass());
         }
     }
 }

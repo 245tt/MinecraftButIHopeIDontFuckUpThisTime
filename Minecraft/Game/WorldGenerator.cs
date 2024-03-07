@@ -5,19 +5,18 @@ namespace Minecraft.Game
     class WorldGenerator
     {
         public int seed { get; private set; }
+        FastNoise noise;
         private World world;
         public WorldGenerator(World world, int seed)
         {
             this.world = world;
             this.seed = seed;
+            noise = new FastNoise(seed);
         }
         public void GenerateChunk(Vector3i chunkPos)
         {
             Chunk chunk = new Chunk();
             chunk.pos = chunkPos;
-            
-
-            Random random = new Random(seed);
 
             for (int z = 0; z < Chunk.CHUNKSIZE; z++)
             {
@@ -25,7 +24,8 @@ namespace Minecraft.Game
                 for (int x = 0; x < Chunk.CHUNKSIZE; x++)
                 {
                     int Xcoord = x + chunkPos.X * Chunk.CHUNKSIZE;
-                    int height = 20 + (int)(MathF.Sin(Xcoord / 10f) * 5);
+                    float noiseheight = noise.GetPerlin(Xcoord * 3, Zcoord * 3) + (2 * noise.GetPerlin(Xcoord / 5, Zcoord / 5)) + noise.GetPerlinFractal(Xcoord, Zcoord);
+                    int height = (int)(20 + noiseheight * 5);
                     for (int y = 0; y < Chunk.CHUNKSIZE; y++)
                     {
                         int Ycoord = y + chunkPos.Y * Chunk.CHUNKSIZE;
@@ -36,7 +36,10 @@ namespace Minecraft.Game
                         }
                         else
                         {
-                            chunk.SetBlockAt(x, y, z, 1);
+                            if (Ycoord >= height - 3)
+                                chunk.SetBlockAt(x, y, z, 1);
+                            else
+                                chunk.SetBlockAt(x, y, z, 2);
                         }
                         if (Ycoord == height)
                         {

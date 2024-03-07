@@ -7,7 +7,10 @@ namespace Minecraft.Graphics
     class HUDRender
     {
         Shader crossShader = new Shader("Assets/Shaders/crosshair.vert", "Assets/Shaders/crosshair.frag");
+        Shader textShader = new Shader("Assets/Shaders/font.vert", "Assets/Shaders/font.frag");
+        FontVAO textVAO = new FontVAO(null);
         crossVAO crossVAO;
+        Font font = new Font("Assets/Fonts/Font.png", "Assets/Fonts/Font.fnt");
         Minecraft instance = Minecraft.GetInstance();
         public HUDRender()
         {
@@ -38,6 +41,19 @@ namespace Minecraft.Graphics
         {
             float size = 0.1f;
             crossShader.SetMatrix4("model", Matrix4.CreateScale(size / instance.window.aspectRatio, size, 0));
+        }
+        public void DrawCurrentBlock(string text) 
+        {
+            textVAO.BindData(font.GenerateText(text,new Vector2(0,-.9f),60));
+            textShader.Use();
+            font.textureAtlas.Use();
+            textVAO.Use();
+            GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.DepthTest);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, textVAO.GetSize());
+            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
         }
         public void DrawCross()
         {

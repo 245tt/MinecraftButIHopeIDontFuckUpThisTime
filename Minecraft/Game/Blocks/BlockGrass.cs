@@ -10,6 +10,10 @@ namespace Minecraft.Game.Blocks
             return 2;
         }
 
+        public override short GetID()
+        {
+            return 4;
+        }
         public override MaterialType Getmaterial()
         {
             return MaterialType.Dirt;
@@ -17,7 +21,7 @@ namespace Minecraft.Game.Blocks
 
         public override string GetName()
         {
-            return "Dirt";
+            return "Grass";
         }
 
         public override Vector4i GetTextureCoord(Direction direction)

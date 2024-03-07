@@ -10,6 +10,7 @@ namespace Minecraft.Game
         {
 
         }
+        public virtual short GetID() { return -1; }
         public virtual byte GetHardness() { return 1; }
         public virtual bool IsOpaque() { return true; }
         public virtual bool IsCollidable() { return true; }

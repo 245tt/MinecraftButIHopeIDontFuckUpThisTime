@@ -22,6 +22,7 @@ namespace Minecraft
         public Camera worldCamera;
         public World world;
         public bool debugMode = false;
+        public bool fullscreen = false;
         public List<ChunkMesher> chunkMeshers = new List<ChunkMesher>();
         Stopwatch stopwatch;
         public double deltaTime;
@@ -32,7 +33,7 @@ namespace Minecraft
                 instance = new Minecraft();
             return instance;
         }
-        public async void Run()
+        public void Run()
         {
             window = new Window();
             renderer = new ChunkRenderer();
@@ -43,7 +44,7 @@ namespace Minecraft
             BlockRegistry.RegisterBlocks();
             stopwatch = new Stopwatch();
             worldCamera.Rotation.Y = -90;
-            worldCamera.Position.Z = 2f;
+            worldCamera.Position.Y = 25f;
             world = new World();
 
             for (int i = 0; i < 5; i++)
@@ -61,6 +62,12 @@ namespace Minecraft
 
                 if (window.window.KeyboardState.IsKeyDown(Keys.LeftShift))
                     speed = 50f;
+
+                if (window.window.KeyboardState.IsKeyPressed(Keys.F11))
+                {
+                    fullscreen = !fullscreen;
+                    window.FullScreen(fullscreen);
+                }
                 //wireframe and face culling
                 if (window.window.KeyboardState.IsKeyPressed(Keys.Z))
                 {
@@ -74,11 +81,11 @@ namespace Minecraft
                 //camera movement
                 if (window.window.KeyboardState.IsKeyDown(Keys.W))
                 {
-                    worldCamera.Position += worldCamera.lookDir * (float)deltaTime * speed;
+                    worldCamera.Position += new Vector3(worldCamera.lookDir.X, 0, worldCamera.lookDir.Z).Normalized() * (float)deltaTime * speed;
                 }
                 if (window.window.KeyboardState.IsKeyDown(Keys.S))
                 {
-                    worldCamera.Position -= worldCamera.lookDir * (float)deltaTime * speed;
+                    worldCamera.Position -= new Vector3(worldCamera.lookDir.X, 0, worldCamera.lookDir.Z).Normalized() * (float)deltaTime * speed;
                 }
 
                 if (window.window.KeyboardState.IsKeyDown(Keys.A))
@@ -89,9 +96,18 @@ namespace Minecraft
                 {
                     worldCamera.Position -= worldCamera.rightDir * (float)deltaTime * speed;
                 }
+                if (window.window.KeyboardState.IsKeyDown(Keys.Space))
+                {
+                    worldCamera.Position += Vector3.UnitY * (float)deltaTime * speed;
+                }
+                if (window.window.KeyboardState.IsKeyDown(Keys.LeftControl))
+                {
+                    worldCamera.Position -= Vector3.UnitY * (float)deltaTime * speed;
+                }
+                if(fullscreen)
+                    window.window.RawMouseInput = true;
                 worldCamera.Rotation.X -= window.window.MouseState.Delta.Y;
                 worldCamera.Rotation.Y += window.window.MouseState.Delta.X;
-
 
 
                 //change placeable blocks
@@ -169,15 +185,14 @@ namespace Minecraft
 
                 //unloading too far chunks
                 List<Vector3i> chunkToRemove = new List<Vector3i>();
-                for (int i = 0; i <world.chunks.Count; i++)
+                for (int i = 0; i < world.chunks.Count; i++)
                 {
                     Chunk chunk = world.chunks.ElementAt(i).Value;
-                
-                    float dist = Vector2.Subtract(chunk.pos.Xz,chunkPos.Xz).Length;
-                    if (dist > 10) 
+
+                    float dist = Vector2.Subtract(chunk.pos.Xz, chunkPos.Xz).Length;
+                    if (dist > 10)
                     {
                         chunkToRemove.Add(chunk.pos);
-                        Console.Out.WriteLine("Removed Chunk at:{0}, distance:{1}",chunk.pos,dist);
                     }
                 }
                 foreach (Vector3i pos in chunkToRemove)
@@ -245,15 +260,13 @@ namespace Minecraft
                             }
                         }
                     }
-
-
                     //draw meshed chunks
                     if (chunk.isMeshed)
                     {
                         renderer.DrawChunk(chunk, renderer.chunkShader);
                     }
-
                 }
+
                 if (hit.hit)
                 {
                     renderer.DrawBlockOutLine(hit.blockPos);
@@ -261,9 +274,11 @@ namespace Minecraft
                 hudRender.Prepare();
                 if (!debugMode)
                     hudRender.DrawCross();
+                hudRender.DrawCurrentBlock(BlockRegistry.GetBlockFromID((short)placeBlock).GetName());
                 debugRenderer.Prepare(worldCamera);
                 if (debugMode)
                 {
+                    debugRenderer.DrawCoords(worldCamera.Position);
                     debugRenderer.DrawDirections();
                     Chunk chunk;
                     if (world.chunks.TryGetValue((Vector3i)chunkPos, out chunk))

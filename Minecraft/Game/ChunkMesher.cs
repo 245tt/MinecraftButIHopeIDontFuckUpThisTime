@@ -51,17 +51,17 @@ namespace Minecraft.Game
                 {
                    
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y + 1, z)).IsOpaque())
-                        data.AddRange(AddTopFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Top)));
+                        data.AddRange(AddTopFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Top),1.0f));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y - 1, z)).IsOpaque())
-                        data.AddRange(AddBottomFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Bottom)));
+                        data.AddRange(AddBottomFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.Bottom),0.2f));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z - 1)).IsOpaque())
-                        data.AddRange(AddNorthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.North)));
+                        data.AddRange(AddNorthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.North), 0.6f));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z + 1)).IsOpaque())
-                        data.AddRange(AddSouthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.South)));
+                        data.AddRange(AddSouthFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.South), 0.6f));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x - 1, y, z)).IsOpaque())
-                        data.AddRange(AddWestFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.West)));
+                        data.AddRange(AddWestFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.West), 0.4f));
                     if (!BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x + 1, y, z)).IsOpaque())
-                        data.AddRange(AddEastFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.East)));
+                        data.AddRange(AddEastFace(x, y, z, BlockRegistry.GetBlockFromID(GetBlockFromPos(chunk, x, y, z)).GetTextureCoord(Common.Direction.East), 0.4f));
                 }
             }
             return data;
@@ -123,88 +123,88 @@ namespace Minecraft.Game
             }
 
         }
-        private float[] AddTopFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddTopFace(int x, int y, int z, Vector4i textureData,float brightness)
         {
             float[] data = new float[]
             {
-            -0.5f + x, 0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width,(textureData.Y+textureData.W)/(float)atlas.height,
-            -0.5f + x, 0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-             0.5f + x, 0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
+            -0.5f + x, 0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width,(textureData.Y+textureData.W)/(float)atlas.height,brightness,
+            -0.5f + x, 0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             0.5f + x, 0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
 
-             0.5f + x, 0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-            -0.5f + x, 0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             0.5f + x, 0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
+             0.5f + x, 0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+            -0.5f + x, 0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             0.5f + x, 0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
             };
             return data;
         }
-        private float[] AddBottomFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddBottomFace(int x, int y, int z, Vector4i textureData, float brightness)
         {
             float[] data = new float[]
             {
-             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height, brightness,
+              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
 
-             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-            };
-            return data;
-        }
-
-        private float[] AddNorthFace(int x, int y, int z, Vector4i textureData)
-        {
-            float[] data = new float[]
-            {
-            -0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-            -0.5f + x,  0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-
-             0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-            -0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-             0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-            };
-            return data;
-        }
-        private float[] AddSouthFace(int x, int y, int z, Vector4i textureData)
-        {
-            float[] data = new float[]
-            {
-             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             -0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-              0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+              0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
             };
             return data;
         }
 
-        private float[] AddWestFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddNorthFace(int x, int y, int z, Vector4i textureData, float brightness)
         {
             float[] data = new float[]
             {
-             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-             -0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             -0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+            -0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+            -0.5f + x,  0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
 
-             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-             -0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-             -0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+             0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+            -0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
             };
             return data;
         }
-        private float[] AddEastFace(int x, int y, int z, Vector4i textureData)
+        private float[] AddSouthFace(int x, int y, int z, Vector4i textureData, float brightness)
         {
             float[] data = new float[]
             {
-             0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-             0.5f + x,  0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
-             0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+              0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             -0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             -0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+              0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+              0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+            };
+            return data;
+        }
 
-             0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,
-             0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,
-             0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,
+        private float[] AddWestFace(int x, int y, int z, Vector4i textureData, float brightness)
+        {
+            float[] data = new float[]
+            {
+             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             -0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             -0.5f + x,  0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+
+             -0.5f + x, -0.5f + y,-0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             -0.5f + x, -0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             -0.5f + x,  0.5f + y, 0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+            };
+            return data;
+        }
+        private float[] AddEastFace(int x, int y, int z, Vector4i textureData, float brightness)
+        {
+            float[] data = new float[]
+            {
+             0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             0.5f + x,  0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+             0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
+
+             0.5f + x, -0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             0.5f + x, -0.5f + y,-0.5f + z,   (textureData.X+textureData.Z)/(float)atlas.width, textureData.Y/(float)atlas.height,brightness,
+             0.5f + x,  0.5f + y, 0.5f + z,   textureData.X/(float)atlas.width, (textureData.Y+textureData.W)/(float)atlas.height,brightness,
             };
             return data;
         }
